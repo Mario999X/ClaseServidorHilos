@@ -28,18 +28,25 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
         // Recogemos el contenido y lo casteamos a Alumno, en algunos casos no nos importara ni el nombre ni la nota...
         val alumno = request.content as Alumno
 
-        when(request.type){
+        when (request.type) {
             Request.Type.ADD -> {
                 log.debug { "Alumno: $alumno" }
                 db.put(alumno)
                 log.debug { "Alumno agregado" }
                 response = Response("Operacion realizada", Response.Type.OK)
             }
+
             Request.Type.CONSULT -> {
                 val listaAlumnos = db.getAll().toSortedMap()
-                if (alumno.nota == 1){
-                    log.debug { "Obteniendo lista en orden pedido"}
-                    val orden = listaAlumnos.values.sortedBy { it.nombre }
+                log.debug { "Obteniendo lista en orden pedido" }
+                var orden: List<Alumno>
+
+                if (alumno.nota == 1) {
+                    orden = listaAlumnos.values.sortedBy { it.nombre }
+                    response = Response(orden.toString(), Response.Type.OK)
+                }
+                if (alumno.nota == 2) {
+                    orden = listaAlumnos.values.sortedByDescending { it.nota }
                     response = Response(orden.toString(), Response.Type.OK)
                 }
             }
@@ -47,6 +54,7 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
             else -> {}
         }
 
+        // Como los Response son mandados como un String, se puede reutilizar asi
         val sendResponse = DataOutputStream(s.getOutputStream())
         sendResponse.writeUTF(json.encodeToString(response) + "\n")
     }

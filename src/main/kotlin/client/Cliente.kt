@@ -67,9 +67,12 @@ fun main() {
                 }
                 nota = readln().toInt() // Reutilizando el codigo
                 if (nota == 1) {
-                    request = Request(Alumno("", 1), Request.Type.CONSULT)
-                    log.debug { "Esperando listado..." }
+                    request = Request(Alumno("", nota), Request.Type.CONSULT)
                 }
+                if (nota == 2) {
+                    request = Request(Alumno("", nota), Request.Type.CONSULT)
+                }
+                log.debug { "Esperando listado..." }
             }
 
             5 -> {
