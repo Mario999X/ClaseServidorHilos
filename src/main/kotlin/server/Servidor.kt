@@ -25,7 +25,7 @@ fun main() {
         Alumno("Mario", 10),
         Alumno("Kratos", 5),
     )
-    // Introducimos a los alumnos
+    // Introducimos los alumnos
     repeat(alumnosBase.size) {
         db.put(alumnosBase[it])
     }

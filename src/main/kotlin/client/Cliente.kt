@@ -28,9 +28,9 @@ fun main() {
     var salida = false
 
     // Datos para los Request
+    lateinit var alumno: Alumno
     var nombre: String
     var nota: Int
-    lateinit var alumno: Alumno
     var id: Int
 
     while (!salida) {
@@ -56,6 +56,26 @@ fun main() {
                 request = Request(alumno, Request.Type.ADD)
 
                 log.debug { "Alumno enviado, esperando respuesta..." }
+            }
+
+            2 -> {
+                log.debug { "\tIntroduzca el ID del alumno: " }
+                id = readln().toInt()
+                request = Request(Alumno("", null, id), Request.Type.DELETE)
+
+                log.debug { "ID enviado, esperando respuesta..." }
+            }
+
+            3 -> {
+                log.debug { "\tIntroduzca el NOMBRE del alumno: " }
+                nombre = readln()
+                log.debug { "\tIntroduzca la NOTA SIN DECIMALES del alumno: " }
+                nota = readln().toInt()
+                log.debug { "\tIntroduzca el ID del alumno: " }
+                id = readln().toInt()
+
+                request = Request(Alumno(nombre, nota, id), Request.Type.UPDATE)
+                log.debug { "Alumno enviado para actualizar, esperando respuesta..." }
             }
 
             4 -> {

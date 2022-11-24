@@ -36,6 +36,23 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
                 response = Response("Operacion realizada", Response.Type.OK)
             }
 
+            Request.Type.DELETE -> {
+                log.debug { "ID: ${alumno.id}" }
+                val existe = alumno.id?.let { db.delete(it) }
+                response = if (!existe!!) {
+                    Response("Alumno no existe", Response.Type.ERROR)
+                } else Response("Alumno eliminado", Response.Type.OK)
+
+            }
+
+            Request.Type.UPDATE -> {
+                log.debug { "Alumno: $alumno" }
+                val existe = alumno.id?.let { db.update(alumno.id!!, alumno) }
+                response = if (!existe!!) {
+                    Response("Alumno no existe", Response.Type.ERROR)
+                } else Response("Alumno actualizado", Response.Type.OK)
+            }
+
             Request.Type.CONSULT -> {
                 val listaAlumnos = db.getAll().toSortedMap()
                 log.debug { "Obteniendo lista en orden pedido" }
