@@ -53,11 +53,13 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
                     log.debug { "Alumno: $alumno" }
                     val existe = alumno.id?.let { db.update(alumno.id!!, alumno) }
                     response = if (!existe!!) {
-                        Response("Alumno no existe", Response.Type.ERROR)
+                        Response("Alumno no existe", Response.Type.OK)
                     } else Response("Alumno actualizado", Response.Type.OK)
                 }
 
-                else -> {}
+                else -> {
+                    response = Response("Tipo no reconocido", Response.Type.ERROR)
+                }
             }
 
             // Request Generica
@@ -72,7 +74,7 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
                     log.debug { "ID: $id" }
                     val existe = id?.let { db.delete(it) }
                     response = if (!existe!!) {
-                        Response("Alumno no existe", Response.Type.ERROR)
+                        Response("Alumno no existe", Response.Type.OK)
                     } else Response("Alumno eliminado", Response.Type.OK)
 
                 }
@@ -94,7 +96,9 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
                     }
                 }
 
-                else -> {}
+                else -> {
+                    response = Response("Tipo no reconocido", Response.Type.ERROR)
+                }
             }
         }
         // Como los Response son mandados como un String, se puede reutilizar asi
