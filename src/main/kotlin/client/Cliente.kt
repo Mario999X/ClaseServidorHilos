@@ -18,6 +18,7 @@ private val json = Json
 // Varios tipos de request segun la operacion a realizar.
 // Una vez se mande, y segun el tipo de Request, el gestor hara lo que deba con el contenido. (menos la opcion 5)
 private lateinit var request: Request<Alumno>
+private lateinit var requestGenerica: Request<Int>
 
 fun main() {
     // Informacion del cliente y la conexion a realizar
@@ -32,6 +33,8 @@ fun main() {
     var nombre: String
     var nota: Int
     var id: Int
+
+    var aviso = 0 // 0 -> Request de Int, 1 -> Request de Alumno
 
     while (!salida) {
         log.debug {
@@ -56,26 +59,29 @@ fun main() {
                 request = Request(alumno, Request.Type.ADD)
 
                 log.debug { "Alumno enviado, esperando respuesta..." }
+                aviso = 1
             }
 
             2 -> {
                 log.debug { "\tIntroduzca el ID del alumno: " }
                 id = readln().toInt()
-                request = Request(Alumno("", null, id), Request.Type.DELETE)
+                requestGenerica = Request(id, Request.Type.DELETE)
 
                 log.debug { "ID enviado, esperando respuesta..." }
+                aviso = 0
             }
 
             3 -> {
-                log.debug { "\tIntroduzca el NOMBRE del alumno: " }
+                log.debug { "\tIntroduzca el nuevo NOMBRE del alumno: " }
                 nombre = readln()
-                log.debug { "\tIntroduzca la NOTA SIN DECIMALES del alumno: " }
+                log.debug { "\tIntroduzca la nueva NOTA SIN DECIMALES del alumno: " }
                 nota = readln().toInt()
-                log.debug { "\tIntroduzca el ID del alumno: " }
+                log.debug { "\tIntroduzca el ID del alumno existente: " }
                 id = readln().toInt()
 
                 request = Request(Alumno(nombre, nota, id), Request.Type.UPDATE)
                 log.debug { "Alumno enviado para actualizar, esperando respuesta..." }
+                aviso = 1
             }
 
             4 -> {
@@ -85,14 +91,15 @@ fun main() {
                     |2. Nota
                 """.trimMargin()
                 }
-                nota = readln().toInt() // Reutilizando el codigo
-                if (nota == 1) {
-                    request = Request(Alumno("", nota), Request.Type.CONSULT)
+                id = readln().toInt() // Reutilizando el codigo
+                if (id == 1) {
+                    requestGenerica = Request(id, Request.Type.CONSULT)
                 }
-                if (nota == 2) {
-                    request = Request(Alumno("", nota), Request.Type.CONSULT)
+                if (id == 2) {
+                    requestGenerica = Request(id, Request.Type.CONSULT)
                 }
                 log.debug { "Esperando listado..." }
+                aviso = 0
             }
 
             5 -> {
@@ -111,15 +118,31 @@ fun main() {
             if (opcion == null || opcion <= 0 || opcion >= 5) {
                 println("------------")
             } else {
+                // Conectamos con el servidor, y segun la opcion seleccionada, le enviamos un aviso (un Int por ejemplo)
                 direccion = InetAddress.getLocalHost()
                 servidor = Socket(direccion, puerto)
 
-                // Envio la Request / Espero la respuesta
                 val sendRequest = DataOutputStream(servidor.getOutputStream())
-                sendRequest.writeUTF(json.encodeToString(request) + "\n")
-                log.debug { "$request enviada con exito, esperando respuesta..." }
-
+                // Enviamos el aviso de Int segun la opcion escogida para que el servidor sepa que Request va a recibir
+                sendRequest.write(aviso)
+                // Esperamos respuesta
                 val receiveResponse = DataInputStream(servidor.getInputStream())
+                receiveResponse.read()
+
+                // Segun la opcion escogida, enviamos un request o otro
+                if (opcion == 1 || opcion == 3) {
+                    // Envio la Request / Espero la respuesta
+                    sendRequest.writeUTF(json.encodeToString(request) + "\n")
+                    log.debug { "$request enviada con exito, esperando respuesta..." }
+                }
+
+                if (opcion == 2 || opcion == 4) {
+                    // Envio la Request / Espero la respuesta
+                    sendRequest.writeUTF(json.encodeToString(requestGenerica) + "\n")
+                    log.debug { "$requestGenerica enviada con exito, esperando respuesta..." }
+                }
+
+                // Respuesta del servidor a la opcion escogida
                 val response = json.decodeFromString<Response<String>>(receiveResponse.readUTF())
                 log.debug { "Respuesta del servidor: ${response.content}" }
 
