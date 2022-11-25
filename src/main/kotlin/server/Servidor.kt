@@ -24,6 +24,7 @@ fun main() {
     val alumnosBase = listOf(
         Alumno("Mario", 10),
         Alumno("Kratos", 5),
+        Alumno("Atreus", 4)
     )
     // Introducimos los alumnos
     repeat(alumnosBase.size) {

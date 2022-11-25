@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Alumno(
     val nombre: String,
-    val nota: Int?,
+    val nota: Int,
     var id: Int?
 ) {
     constructor(

@@ -36,11 +36,11 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
             request = json.decodeFromString<Request<Alumno>>(readerRequest.readUTF())
             log.debug { "Recibido: $request" }
 
+            // Recogemos el contenido y lo casteamos a Alumno
+            val alumno = request.content as Alumno
+
             when (request.type) {
                 ADD -> {
-                    // Recogemos el contenido y lo casteamos a Alumno
-                    val alumno = request.content as Alumno
-
                     log.debug { "Alumno: $alumno" }
                     db.put(alumno)
                     log.debug { "Alumno agregado" }
@@ -48,8 +48,6 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
                 }
 
                 UPDATE -> {
-                    val alumno = request.content as Alumno
-
                     log.debug { "Alumno: $alumno" }
                     val existe = alumno.id?.let { db.update(alumno.id!!, alumno) }
                     response = if (!existe!!) {
@@ -58,7 +56,7 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
                 }
 
                 else -> {
-                    response = Response("Tipo no reconocido", Response.Type.ERROR)
+                    response = Response("Error | signal recibido: $signal ", Response.Type.ERROR)
                 }
             }
 
@@ -67,37 +65,50 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
             requestGenerica = json.decodeFromString<Request<Int>>(readerRequest.readUTF())
             log.debug { "Recibido: $request" }
 
+            // Recogemos el contenido y lo casteamos a Alumno
+            val numOpcion = requestGenerica.content as Int
+
             when (requestGenerica.type) {
                 DELETE -> {
-                    val id = requestGenerica.content
 
-                    log.debug { "ID: $id" }
-                    val existe = id?.let { db.delete(it) }
-                    response = if (!existe!!) {
+                    log.debug { "ID: $numOpcion" }
+                    val existe = numOpcion.let { db.delete(it) }
+                    response = if (!existe) {
                         Response("Alumno no existe", Response.Type.OK)
                     } else Response("Alumno eliminado", Response.Type.OK)
 
                 }
 
                 CONSULT -> {
-                    val opcion = requestGenerica.content
 
                     val listaAlumnos = db.getAll().toSortedMap()
                     log.debug { "Obteniendo lista en orden pedido" }
-                    var orden: List<Alumno>
+                    var orden = listOf<Alumno>()
 
-                    if (opcion == 1) {
+                    if (numOpcion == 1) {
                         orden = listaAlumnos.values.sortedBy { it.nombre }
-                        response = Response(orden.toString(), Response.Type.OK)
                     }
-                    if (opcion == 2) {
+                    if (numOpcion == 2) {
                         orden = listaAlumnos.values.sortedByDescending { it.nota }
-                        response = Response(orden.toString(), Response.Type.OK)
+                    }
+                    if (numOpcion == 3) {
+                        orden = listaAlumnos.values.filter { it.nota >= 5 }
+                    }
+                    if (numOpcion == 4) {
+                        orden = listaAlumnos.values.filter { it.nota < 5 }
+                    }
+                    response = Response(orden.toString(), Response.Type.OK)
+
+                    if (numOpcion == 5) {
+                        val alumnos = db.getAll().values.toList()
+                        val media = alumnos.stream().mapToInt { it.nota }.average()
+
+                        response = Response(media.toString(), Response.Type.OK)
                     }
                 }
 
                 else -> {
-                    response = Response("Tipo no reconocido", Response.Type.ERROR)
+                    response = Response("Error | signal recibido: $signal ", Response.Type.ERROR)
                 }
             }
         }

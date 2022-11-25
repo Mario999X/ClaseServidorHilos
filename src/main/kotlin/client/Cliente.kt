@@ -34,7 +34,7 @@ fun main() {
     var nota: Int
     var id: Int
 
-    var aviso = 0 // 0 -> Request de Int, 1 -> Request de Alumno
+    var aviso = 0 // 0 -> Request Generica [Int], 1 -> Request de Alumno
 
     while (!salida) {
         log.debug {
@@ -52,8 +52,12 @@ fun main() {
             1 -> {
                 log.debug { "\tIntroduzca el NOMBRE del alumno: " }
                 nombre = readln()
+
                 log.debug { "\tIntroduzca la NOTA SIN DECIMALES del alumno: " }
                 nota = readln().toInt()
+                // Las notas van de 0 a 10, punto.
+                if (nota < 0) nota = 0
+                if (nota > 10) nota = 10
 
                 alumno = Alumno(nombre, nota)
                 request = Request(alumno, Request.Type.ADD)
@@ -74,8 +78,13 @@ fun main() {
             3 -> {
                 log.debug { "\tIntroduzca el nuevo NOMBRE del alumno: " }
                 nombre = readln()
+
                 log.debug { "\tIntroduzca la nueva NOTA SIN DECIMALES del alumno: " }
                 nota = readln().toInt()
+                // Las notas van de 0 a 10, punto.
+                if (nota < 0) nota = 0
+                if (nota > 10) nota = 10
+
                 log.debug { "\tIntroduzca el ID del alumno existente: " }
                 id = readln().toInt()
 
@@ -89,6 +98,9 @@ fun main() {
                     """Elija el orden de los alumnos a mostrar:
                     |1. Alfabetico
                     |2. Nota
+                    |3. Solo APROBADOS
+                    |4. Solo SUSPENSOS
+                    |5. Media de NOTAS
                 """.trimMargin()
                 }
                 id = readln().toInt() // Reutilizando el codigo
@@ -97,6 +109,18 @@ fun main() {
                 }
                 if (id == 2) {
                     requestGenerica = Request(id, Request.Type.CONSULT)
+                }
+                if (id == 3) {
+                    requestGenerica = Request(id, Request.Type.CONSULT)
+                }
+                if (id == 4) {
+                    requestGenerica = Request(id, Request.Type.CONSULT)
+                }
+                if (id == 5) {
+                    requestGenerica = Request(id, Request.Type.CONSULT)
+                }
+                if (id < 1 || id > 5) {
+                    requestGenerica = Request(id, Request.Type.ERROR)
                 }
                 log.debug { "Esperando listado..." }
                 aviso = 0
