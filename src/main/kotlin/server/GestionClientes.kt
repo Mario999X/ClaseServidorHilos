@@ -63,7 +63,7 @@ class GestionClientes(private val s: Socket, private val db: DB) : Runnable {
             // Request Generica
         } else {
             requestGenerica = json.decodeFromString<Request<Int>>(readerRequest.readUTF())
-            log.debug { "Recibido: $request" }
+            log.debug { "Recibido: $requestGenerica" }
 
             // Recogemos el contenido y lo casteamos a Alumno
             val numOpcion = requestGenerica.content as Int
